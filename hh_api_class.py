@@ -37,9 +37,8 @@ class HeadHunterAPI:
     @staticmethod
     def normalize_emp(emp_dict):
         normalized_tuple = (
-            emp_dict["id"],
+            int(emp_dict["id"]),
             emp_dict["trusted"],
-            emp_dict["accredited_it_employer"],
             emp_dict["name"],
             emp_dict["type"],
             emp_dict["area"]["name"],
@@ -71,8 +70,8 @@ class HeadHunterAPI:
             dt = None
 
         normalized_tuple = (
-            vac_dict["id"],
-            vac_dict["employer"]["id"],
+            int(vac_dict["id"]),
+            int(vac_dict["employer"]["id"]),
             dt,
             vac_dict["name"],
             vac_dict["area"]["name"],
