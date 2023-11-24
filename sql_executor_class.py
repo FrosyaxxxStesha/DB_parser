@@ -48,27 +48,25 @@ class SQLExecutor:
     def __exit__(self):
         self.close()
 
+    @staticmethod
+    def get_script(script: str):
+        if script.endswith(".sql"):
+            with open(script) as fp:
+                script = fp.read()
+        return script
+
     def execute(self, sql_script):
         with self.__conn.cursor() as cur:
             cur.execute(sql_script)
 
-    def execute_select(self, sql_script):
-        with self.__conn.cursor() as cur:
-            cur.execute(sql_script)
-            data = cur.fetchall()
-        return data
-
-    def create_tables(self, script_file):
-        with open(script_file, "r") as fp:
-            sql_script = fp.read()
+    def create_tables(self, script="sql_scripts/create_db.sql"):
+        sql_script = self.get_script(script)
         self.execute(sql_script)
 
-    def fill_table(self, items: list[tuple], script_template_file: str) -> None:
+    def fill_table(self, items: list[tuple], script_template: str) -> None:
         prepared_list = [str(i) for i in items]
         emp_string = ",\n".join(prepared_list)
-
-        with open(script_template_file, "r") as fp:
-            sql_script_template = fp.read()
+        sql_script_template = self.get_script(script_template)
 
         sql_script = sql_script_template.replace("{placeholder}", emp_string)
         self.execute(sql_script)

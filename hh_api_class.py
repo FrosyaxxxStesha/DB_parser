@@ -1,5 +1,4 @@
 from requests import get
-from accessify import private, protected
 from json import loads, dumps
 from datetime import datetime
 
@@ -18,7 +17,7 @@ class HeadHunterAPI:
         return emp_dict
 
     def get_employers(self) -> list:
-        return [self.connect_api_emp(emp_id) for emp_id in self.__emp_id_list]
+        return [self.normalize_emp(self.connect_api_emp(emp_id)) for emp_id in self.__emp_id_list]
 
     def connect_api_vacs(self, emp_id, per_page=100):
         params = dict(employer_id=emp_id, per_page=per_page)
@@ -30,7 +29,7 @@ class HeadHunterAPI:
         vac_list = []
 
         for emp_id in self.__emp_id_list:
-            vac_list.extend(self.connect_api_vacs(emp_id))
+            vac_list.extend(self.normalize_vac(self.connect_api_vacs(emp_id)))
 
         return vac_list
 
