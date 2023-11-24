@@ -1,5 +1,5 @@
 from requests import get
-from json import loads, dumps
+from json import dumps
 from datetime import datetime
 
 
@@ -29,7 +29,7 @@ class HeadHunterAPI:
         vac_list = []
 
         for emp_id in self.__emp_id_list:
-            vac_list.extend(self.normalize_vac(self.connect_api_vacs(emp_id)))
+            vac_list.extend(self.normalize_vac(i) for i in self.connect_api_vacs(emp_id))
 
         return vac_list
 
@@ -41,7 +41,6 @@ class HeadHunterAPI:
             emp_dict["name"],
             emp_dict["type"],
             emp_dict["area"]["name"],
-            emp_dict["open_vacancies"],
             emp_dict["site_url"],
             emp_dict["alternate_url"],
             emp_dict["vacancies_url"],
@@ -75,14 +74,11 @@ class HeadHunterAPI:
             vac_dict["name"],
             vac_dict["area"]["name"],
             salary,
-            vac_dict["address"],
-            vac_dict["url"],
-            vac_dict["snippet"]["requirement"],
-            vac_dict["snippet"]["responsibility"]
+            vac_dict["url"]
         )
 
         return normalized_tuple
 
 
 f = HeadHunterAPI([str(9498112)])
-print(dumps(f.get_vacs(), ensure_ascii=False, indent=2))
+print(f.get_employers())

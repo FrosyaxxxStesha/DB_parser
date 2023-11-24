@@ -1,5 +1,6 @@
 import psycopg2
 from config import config
+from json import dumps
 
 
 class SQLExecutor:
@@ -15,8 +16,8 @@ class SQLExecutor:
 
         if config_file is None:
             init_by_config = False
-        elif password is None:
-            raise ValueError("пароль не введён")
+            if password is None:
+                raise ValueError("пароль не введён")
 
         if init_by_config:
             params = config()
@@ -34,18 +35,20 @@ class SQLExecutor:
 
     def connect(self):
         if self.__conn is None:
-            self.__conn = psycopg2.connect()
+            self.__conn = psycopg2.connect(**self.__params)
         return self.__conn
 
     def close(self):
         if self.__conn is not None:
+            self.__conn.commit()
             self.__conn.close()
             self.__conn = None
 
     def __enter__(self):
-        return self.connect()
+        self.connect()
+        return self
 
-    def __exit__(self):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
     @staticmethod
@@ -56,6 +59,7 @@ class SQLExecutor:
         return script
 
     def execute(self, sql_script):
+        print(sql_script)
         with self.__conn.cursor() as cur:
             cur.execute(sql_script)
 
@@ -63,10 +67,14 @@ class SQLExecutor:
         sql_script = self.get_script(script)
         self.execute(sql_script)
 
-    def fill_table(self, items: list[tuple], script_template: str) -> None:
-        prepared_list = [str(i) for i in items]
-        emp_string = ",\n".join(prepared_list)
-        sql_script_template = self.get_script(script_template)
+    def fill_table(self, items: list[tuple], table_name: str, script: str = "sql_scripts/fill_template.sql") -> None:
+        prepared_list = [str(i).replace("''", "NULL").replace("None", "NULL")
+                         for i in items]
 
-        sql_script = sql_script_template.replace("{placeholder}", emp_string)
+        value_string = ",\n".join(prepared_list)
+        sql_script_template = self.get_script(script)
+
+        sql_script = sql_script_template.replace("{name_place}", table_name)
+        sql_script = sql_script.replace("{values_place}", value_string)
+
         self.execute(sql_script)

@@ -25,6 +25,6 @@ class DBManager(SQLExecutor):
         return self.execute_select(script)
 
     def get_vacancies_with_keyword(self, keyword):
-        script = self.get_script("sql_scripts/get_all_vacancies.sql")
-        script = script.replace("{placeholder}", keyword)
+        script = self.get_script("sql_scripts/get_vacancies_with_kw.sql")
+        script = script.replace("{keyword}", keyword)
         return self.execute_select(script)
