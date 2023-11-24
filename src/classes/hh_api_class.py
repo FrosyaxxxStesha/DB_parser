@@ -1,40 +1,45 @@
 from requests import get
-from json import dumps
 from datetime import datetime
 
 
 class HeadHunterAPI:
+    """Класс для работы с API hh.ru"""
     __base_url: str = 'https://api.hh.ru/'
     __emp_url: str = __base_url + 'employers/'
     __vac_url: str = __base_url + 'vacancies'
 
-    def __init__(self, emp_id_list):
+    def __init__(self, emp_id_list: list[str]) -> None:
         self.__emp_id_list = emp_id_list
 
-    def connect_api_emp(self, emp_id):
+    def connect_api_emp(self, emp_id: str) -> dict:
+        """Метод для получения данных об одном работодателе"""
         with get(self.__emp_url + emp_id) as response:
             emp_dict = response.json()
         return emp_dict
 
     def get_employers(self) -> list:
+        """Метод для получения готовых данных о списке работодателей"""
         return [self.normalize_emp(self.connect_api_emp(emp_id)) for emp_id in self.__emp_id_list]
 
-    def connect_api_vacs(self, emp_id, per_page=100):
+    def connect_api_vac(self, emp_id: str, per_page: int = 100) -> list[dict]:
+        """Метод для получения данных о вакансиях одного работодателя"""
         params = dict(employer_id=emp_id, per_page=per_page)
         with get(self.__vac_url, params=params) as response:
             vacs = response.json()
         return vacs['items']
 
-    def get_vacs(self):
+    def get_vacs(self) -> list:
+        """Метод для получения готовых данных о вакансиях по списку работодателей"""
         vac_list = []
 
         for emp_id in self.__emp_id_list:
-            vac_list.extend(self.normalize_vac(i) for i in self.connect_api_vacs(emp_id))
+            vac_list.extend(self.normalize_vac(i) for i in self.connect_api_vac(emp_id))
 
         return vac_list
 
     @staticmethod
-    def normalize_emp(emp_dict):
+    def normalize_emp(emp_dict: dict) -> tuple:
+        """Метод для приведения данных о работодателе в удобный для БД вид"""
         normalized_tuple = (
             int(emp_dict["id"]),
             emp_dict["trusted"],
@@ -50,7 +55,8 @@ class HeadHunterAPI:
         return normalized_tuple
 
     @staticmethod
-    def normalize_vac(vac_dict):
+    def normalize_vac(vac_dict: dict) -> tuple:
+        """Метод для приведения данных о вакансии в удобный для БД вид"""
         if vac_dict["salary"] is None:
             salary = None
         elif vac_dict["salary"]["from"] is None and vac_dict["salary"]["to"] is None:
@@ -78,7 +84,3 @@ class HeadHunterAPI:
         )
 
         return normalized_tuple
-
-
-f = HeadHunterAPI([str(9498112)])
-print(f.get_employers())
