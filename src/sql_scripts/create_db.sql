@@ -1,4 +1,5 @@
-CREATE TABLE IF NOT EXISTS employers(
+DROP TABLE IF EXISTS employers CASCADE;
+CREATE TABLE employers(
     employer_id int PRIMARY KEY,
     trusted bool NOT NULL,
     name varchar(100) NOT NULL,
@@ -10,7 +11,8 @@ CREATE TABLE IF NOT EXISTS employers(
     description text
 );
 
-CREATE TABLE IF NOT EXISTS vacancies(
+DROP TABLE IF EXISTS vacancies;
+CREATE TABLE vacancies(
     vacancy_id int PRIMARY KEY,
     employer_id int REFERENCES employers(employer_id),
     published_at timestamp,
